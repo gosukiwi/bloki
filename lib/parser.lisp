@@ -28,6 +28,21 @@
 (defun make-pinput-from-string (str)
   (make-pinput :contents str))
 
+(defun pinput-first (input amount)
+  (subseq (pinput-contents input) 0 amount))
+
+(defun pinput-starts-with (str input)
+  (equalp str (pinput-first input (length str))))
+
+(defun pinput-grab (str input)
+  "takes a string, tries to grab it from the first of the input.
+  if the input starts with the given string, it returns '(t rest)
+  otherwise it returns '(nil input)."
+  (let ((result (pinput-starts-with str input)))
+    (if result
+        (values t (pinput-skip (length str) input))
+        (values nil input))))
+
 
 
 ;; Parser result
@@ -82,8 +97,15 @@
       (presult-ok head tail)
       (presult-fail input)))
 
-(defp whitespace ()
-  (run-parser (any-of '(#\Space #\Backspace #\Linefeed #\Tab #\Return)) input))
+(defp pstr (str)
+  (multiple-value-bind (success rest) (pinput-grab str input)
+    (if success
+        (presult-ok (make-pinput-from-string str) rest)
+        (presult-fail input))))
+
+(defun whitespace ()
+  (lambda (input)
+    (run-parser (any-of '(#\Space #\Backspace #\Linefeed #\Tab #\Return)) input)))
 
 ;; Unary parser combinators
 
