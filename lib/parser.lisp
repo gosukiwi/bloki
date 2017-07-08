@@ -52,7 +52,7 @@
 
 (defmacro defp (name args body)
   "Sugar for making parsers. In the parser body you'll have access to the variables:
-   head-as-char, head, tail, and input."
+   head-as-char, head, tail, and input. `head', `tail', and `input' are pinput."
   `(defun ,name ,args
      (lambda (input)
        (multiple-value-bind (head-as-char tail) (pinput-peek input)
@@ -60,11 +60,11 @@
            ,body)))))
 
 (defun run-parser (parser input)
-  "Helper function to run parsers on a given input"
+  "Run a parser on a given pinput"
   (apply parser (list input)))
 
 (defun test-parser (parser input)
-  "Helper function for playing around with the repl"
+  "Helper function for playing around with the REPL"
   (apply parser (list (make-pinput-from-string input))))
 
 
@@ -101,6 +101,13 @@
                  (t
                   (setq iterating nil)))
             finally (return matched)))))
+
+(defun many-0 (parser)
+  (lambda (input)
+    (let ((result (run-parser (many-1 parser) input)))
+      (if (presult-success result)
+          result
+          (presult-ok (empty-pinput) input)))))
 
 ;; Binary parser combinators
 
