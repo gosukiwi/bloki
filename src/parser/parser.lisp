@@ -126,7 +126,7 @@
               (presult-fail input)))
         (presult-fail input))))
 
-;; Blocki parser
+;; Blocki-specific parsers
 
 ;; strings
 ;; =======
@@ -155,6 +155,8 @@
   (between :lhs (pquote) :rhs (pquote) :match (many-0 (string-char))))
 
 ;; numbers
+;; =======
+
 
 ;; program := block+
 (defun pprogram ()
