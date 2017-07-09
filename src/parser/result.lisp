@@ -14,7 +14,7 @@
 
 (defstruct presult
   (success   nil :type boolean)
-  (matched   nil :type pinput)
+  (matched   nil)
   (remaining nil :type pinput))
 
 (defun presult-ok (matched rest)

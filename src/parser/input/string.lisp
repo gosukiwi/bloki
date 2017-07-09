@@ -8,6 +8,7 @@
    #:make-pinput-from-char
    #:make-pinput-from-string
    #:pinput
+   #:pinput-as-string
    #:pinput-concat
    #:pinput-emptyp
    #:pinput-grab
@@ -58,3 +59,6 @@
 
 (defun pinput-emptyp (input)
   (= 0 (length (pinput-contents input))))
+
+(defun pinput-as-string (input)
+  (pinput-contents input))

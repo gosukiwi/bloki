@@ -1,4 +1,3 @@
-;;;; -*- Mode: Lisp; Syntax: ANSI-Common-Lisp; Base: 10 -*-
 (defsystem "bloki"
   :name "bloki"
   :version "0.0.0"
@@ -17,6 +16,7 @@
                           :components
                           ((:file "string")))
                          (:file "result")
+                         (:file "ast")
                          (:file "parser"))))
   :in-order-to ((test-op (test-op "bloki/tests"))))
 

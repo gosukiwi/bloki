@@ -1,7 +1,8 @@
 (defpackage :bloki.parser.parser
   (:use :cl
-        :bloki.parser.input.string
-        :bloki.parser.result)
+        :bloki.parser.ast
+        :bloki.parser.result
+        :bloki.parser.input.string)
   (:export
    #:parse))
 (in-package :bloki.parser.parser)
@@ -126,6 +127,20 @@
               (presult-fail input)))
         (presult-fail input))))
 
+;; this function evaluates the parsers in the given order.
+;; it saves the results and passes them as arguments to a given function
+(defp seq (callback &rest parsers)
+  (let ((remaining input)
+        (collected nil))
+    (setq collected (loop for p in parsers
+                          for result = (run-parser p remaining)
+                          do (setq remaining (presult-remaining result))
+                          while (presult-success result)
+                          collect result))
+    (if (= (length parsers) (length collected))
+        (apply callback collected)
+        (presult-fail input))))
+
 ;; Blocki-specific parsers
 
 ;; strings
@@ -157,6 +172,47 @@
 ;; numbers
 ;; =======
 
+;; blocks
+;; ======
+
+;; patom := string | number | array
+(defun patom ()
+  (pstring))
+
+(defun pidentifier ()
+  (many-1 (any-of "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_1234567890")))
+
+(defun psymbol ()
+  (and-then (pone #\:)
+            (pidentifier)))
+
+;; pfuncarg-pair := <symbol> <atom>
+(defun pfuncarg-pair ()
+  (seq (lambda (symbol spaces atom)
+         (declare (ignore spaces))
+         (presult-ok (make-node-from-funcpair symbol atom) (presult-remaining atom)))
+       (psymbol)
+       (many-1 (whitespace))
+       (patom)))
+
+;; pfuncargs := <patom> | <pfuncarg-pair>+
+(defun pfuncargs ()
+  (or-else (patom)
+           (many-1 (pfuncarg-pair))))
+
+;; pfuncall := <pidentifier> <pfuncargs>
+(defun pfuncall ()
+  (and-then (pidentifier)
+            (pfuncargs)))
+
+;; pblock-body := <pstring>
+(defun pblock-body ()
+  (pfuncall)
+  (patom))
+
+;; pblock := "[" <pblock-body> "]"
+(defun pblock ()
+  (between :lhs (pone #\[) :rhs (pone #\]) :match (pblock-body)))
 
 ;; program := block+
 (defun pprogram ()
