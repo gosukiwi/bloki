@@ -140,3 +140,20 @@ Bloki is a functional dynamic programming language which looks blocky. It looks 
     
 # Developers
 Bloki is implemented using Common Lisp. It compiles bloki code down to Lisp, it can then eval it or emit machine code.
+
+In case you haven't, set up ASDF:
+
+    (setf asdf:*central-registry*
+       ;; Default directories, usually just the ``current directory''
+      '(*default-pathname-defaults*
+    
+        ;; Additional places where ASDF can find
+        ;; system definition files
+        #p"/home/foo/lisp/systems/"
+        #p"/usr/share/common-lisp/systems/"))
+
+Then just link `lib/bloki.asd`
+
+    $ git clone bloki /home/foo/code/bloki
+    $ cd /home/foo/lisp/systems
+    $ ln -s /home/foo/code/bloki/lib/bloki.asd

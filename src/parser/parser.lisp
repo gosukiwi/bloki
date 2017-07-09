@@ -1,55 +1,12 @@
-;; Persers abstract the way input is conumsed. This is a simple wrapper using strings
-;; for development purposes. This should use streams.
+(defpackage :bloki
+  (:use :cl
+        :bloki.parser.input.string)
+  (:export
+   #:parse
+   #:test-parser
+   #:presult-success))
+(in-package :bloki)
 
-(defstruct pinput
-  (contents nil :type string))
-
-(defun make-pinput-from-char (char)
-  (make-pinput :contents (coerce (list char) 'string)))
-
-(defun pinput-char-at (index input)
-  (elt (pinput-contents input) index))
-
-(defun pinput-skip (amount input)
-  (make-pinput :contents (subseq (pinput-contents input) amount)))
-
-(defun pinput-peek (input)
-  "peeks some input, returns the first character and the rest"
-  (let ((head (pinput-char-at 0 input))
-        (tail (pinput-skip 1 input)))
-    (values head tail)))
-
-(defun make-empty-pinput ()
-  (make-pinput :contents ""))
-
-(defun pinput-concat (a b)
-  (make-pinput :contents (concatenate 'string (pinput-contents a) (pinput-contents b))))
-
-(defun make-pinput-from-string (str)
-  (make-pinput :contents str))
-
-(defun pinput-first (input amount)
-  (subseq (pinput-contents input) 0 amount))
-
-(defun pinput-starts-with (str input)
-  (equalp str (pinput-first input (length str))))
-
-(defun pinput-grab (str input)
-  "takes a string, tries to grab it from the first of the input.
-  if the input starts with the given string, it returns '(t rest)
-  otherwise it returns '(nil input)."
-  (let ((result (pinput-starts-with str input)))
-    (if result
-        (values t (pinput-skip (length str) input))
-        (values nil input))))
-
-(defun pinput-emptyp (input)
-  (= 0 (length (pinput-contents input))))
-
-
-
-;; Parsers
-;; =======
 (defstruct presult
   (success   nil :type boolean)
   (matched   nil :type pinput)
@@ -237,6 +194,6 @@
   (many-1 (pblock)))
 
 ;; Interface with the outer world
-(defun parser (input)
+(defun parse (input)
   "Takes bloki input, returns an AST."
-  t)
+  input)
