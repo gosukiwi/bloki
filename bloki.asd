@@ -16,7 +16,8 @@
                           :pathname "input"
                           :components
                           ((:file "string")))
-                         (:file "parser" ))))
+                         (:file "result")
+                         (:file "parser"))))
   :in-order-to ((test-op (test-op "bloki/tests"))))
 
 (defsystem "bloki.tests"

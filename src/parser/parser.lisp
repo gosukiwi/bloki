@@ -1,32 +1,10 @@
-(defpackage :bloki
+(defpackage :bloki.parser.parser
   (:use :cl
-        :bloki.parser.input.string)
+        :bloki.parser.input.string
+        :bloki.parser.result)
   (:export
-   #:parse
-   #:test-parser
-   #:presult-success))
-(in-package :bloki)
-
-(defstruct presult
-  (success   nil :type boolean)
-  (matched   nil :type pinput)
-  (remaining nil :type pinput))
-
-(defun presult-ok (matched rest)
-  (make-presult :success t :matched matched :remaining rest))
-
-(defun presult-fail (input)
-  (make-presult :success nil :matched (make-empty-pinput) :remaining input))
-
-(defun presult-failp (result)
-  (equalp nil (presult-success result)))
-
-(defun concat-presult (a b)
-  (if (presult-success b)
-      (if (presult-success a)
-          (presult-ok (pinput-concat (presult-matched a) (presult-matched b)) (presult-remaining b))
-          b)
-      a))
+   #:parse))
+(in-package :bloki.parser.parser)
 
 (defmacro defp (name args body)
   "Sugar for making parsers. In the parser body you'll have access to the variables:
