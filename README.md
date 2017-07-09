@@ -157,3 +157,11 @@ Then just link `lib/bloki.asd`
     $ git clone bloki /home/foo/code/bloki
     $ cd /home/foo/lisp/systems
     $ ln -s /home/foo/code/bloki/lib/bloki.asd
+
+## Running tests
+
+    (asdf:test-system :my-app)
+    (asdf:test-system :my-app-test)
+    
+    ;; Same as 'asdf:test-system' except it returns T or NIL as the result of tests.
+    (prove:run :my-app-test)
