@@ -1,36 +1,38 @@
 Bloki lang
 ============================================
 
-Bloki is a functional dynamic programming language which looks blocky. It looks like this:
+Bloki is a functional static programming language which feels dynamic and looks blocky. 
 
-    // atoms are basically dicts
-    [atom person :name :age] // { name: nil, age: nil }
+It looks like this:
+
+    // custom types are basically dicts
+    [type person :name :age] // { name: nil, age: nil }
     // ^--- a block is anything between square brackets: `[...]'. All blocks eval to something.
     
     []  // the empty block is nil
     nil // equivalent statements
+
+    // atoms evaluate to themselves
+    1     // an int
+    "foo" // a string
+    1.23  // a float
     
-    // let binding, immutable, cannot be changed.
+    // let binding is immutable, cannot be changed.
     // special form
     [let array (:a-symbol 1 2 3 "string")] // binds to global context
     
     // when the first element of a block is a function, it gets called with the following items as parameters.
-    [print "hi"]
+    [string/print "hi"]
     [string/index-at 1]
-    
-    // default constructor
-    [let p [new person]] // syntax sugar for as [person dup]
-    
-    // defining `new' using a macro.
-    // the compiler will read this, and replace all `[new _]' blocks with the body, of this block "as a string"
-    // and the string will be evaled instead.
-    [macro new [name]
-      "[dup name]"]
-    
+          
     // constructor
     [fn person/new [name age]
       [let p [set person :name name :age age]]
       p]
+
+    // or simple
+    [fn person/new [name age]
+      [set person :name name :age age]]
     
     // whenever there is more than 1 parameter, it must be named
     [let p [person/new :name "Mike" :age 18]]
@@ -64,7 +66,7 @@ Bloki is a functional dynamic programming language which looks blocky. It looks 
     [add-one 2] // => 3
       
     // binary functions
-    [fn + [a b] [a plus b]]
+    [fn + [a b] [number/plus a b]]
     // when the first item in a block is an atom, it assumes a binary operation
     [1 + 2]
 
@@ -93,13 +95,30 @@ Bloki is a functional dynamic programming language which looks blocky. It looks 
     // it tests each block with the first element of it.
     // if the first element is a function, it calls that function with the parameter, for example, `[< 10]` returns a function which is true when the first parameter is smaller than 10, because of currying
     // if the first element is a value, it compares it using ==
-    
+
+    [fn say-type [value]
+      [match foo with
+        [number "It's a number"]
+        [string "It's a string"]]]
+    // the compiler knows the type of foo, it knows what match expects
+    [say-type "hi"]                      // => "It's a string"
+    [say-type [person/new :name "Mike"]] // => Compiler error
+
+    [fn say-type [value]
+      [match foo with
+        [number "It's a number"]
+        [string "It's a string"]
+        [t      "I don't even know"]]]
+    [say-type [person/new :name "Mike"]] // => "I don't even know"
+
     // comparison
     // comparison is semantic, each native atom implements the `==' function.
     [1 = 1] // => true
     [1 = 2] // => false
-    
-    [= a: 1 b: 2] // => false, using the other way of calling functions
+    // same as doing
+    [number/eq? a: 1 b: 1]
+    [number/eq? a: 1 b: 2]
+    // the = function does a big match, basically
     
     // implement equality
     // override the function. because changing things is explicit in bloki, we need to use `fn-override` instead of `fn`
