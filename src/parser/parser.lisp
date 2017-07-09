@@ -23,8 +23,7 @@
 
 (defun test-parser (parser input)
   "Helper function for playing around with the REPL"
-  (apply parser (list (make-pinput-from-string input))))
-
+  (run-parser parser (make-pinput-from-string input)))
 
 ;; Base Parsers
 ;; ============

@@ -1,3 +1,6 @@
+;; All parsers must take input somehow. All parser input interfaces live in `src/parser/input'.
+;; This is a simple interface around strings. It's used for easy development.
+;; TODO Implement an interface around file reading? Wait until it's needed though.
 (defpackage bloki.parser.input.string
   (:use :common-lisp)
   (:export
@@ -17,6 +20,12 @@
 (defun make-pinput-from-char (char)
   (make-pinput :contents (coerce (list char) 'string)))
 
+(defun make-pinput-from-string (str)
+  (make-pinput :contents str))
+
+(defun make-empty-pinput ()
+  (make-pinput :contents ""))
+
 (defun pinput-char-at (index input)
   (elt (pinput-contents input) index))
 
@@ -29,14 +38,8 @@
         (tail (pinput-skip 1 input)))
     (values head tail)))
 
-(defun make-empty-pinput ()
-  (make-pinput :contents ""))
-
 (defun pinput-concat (a b)
   (make-pinput :contents (concatenate 'string (pinput-contents a) (pinput-contents b))))
-
-(defun make-pinput-from-string (str)
-  (make-pinput :contents str))
 
 (defun pinput-first (input amount)
   (subseq (pinput-contents input) 0 amount))
