@@ -25,6 +25,9 @@
 
 ;; Base Parsers
 ;; ============
+(defp nothing ()
+  (presult-ok nil input))
+
 (defp any-of (chars)
   (multiple-value-bind (head-as-char tail) (pinput-peek input)
     (let ((head (make-pinput-from-char head-as-char)))
@@ -75,7 +78,7 @@
           do (setq matched (concat-presult matched new-matched))
           finally (return matched))))
 
-(defp many-1 (parser)
+(defp many-1 (parser &key (with #'concat-presult))
   (let ((matched (presult-fail input))
         (remaining input)
         (iterating t))
@@ -83,7 +86,7 @@
           while iterating
           if (presult-success new-matched)
             do (progn
-                 (setq matched (concat-presult matched new-matched))
+                 (setq matched (apply with (list matched new-matched)))
                  (setq remaining (presult-remaining new-matched)))
           else do (setq iterating nil)
           finally (return matched))))
@@ -92,21 +95,34 @@
   "matches a parser 0 or more times"
   (popt (many-1 parser)))
 
-;; Binary parser combinators
-(defp and-then (p1 p2)
-  (let ((result (run-parser p1 input)))
-    (if (presult-success result)
-        (let ((result2 (run-parser p2 (presult-remaining result))))
-          (if (presult-success result2)
-              (concat-presult result result2)
-              (presult-fail input)))
-        result)))
 
-(defp or-else (p1 p2)
-  (let ((result (run-parser p1 input)))
-    (if (presult-success result)
-        result
-        (run-parser p2 input))))
+;; Combinators
+
+;; this function evaluates the parsers in the given order.
+;; it saves the results and passes them as arguments to a given function
+(defp seq (callback &rest parsers)
+  (let ((remaining input)
+        (collected nil))
+    (setq collected (loop for p in parsers
+                          for result = (run-parser p remaining)
+                          do (setq remaining (presult-remaining result))
+                          while (presult-success result)
+                          collect result))
+    (if (= (length parsers) (length collected))
+        (apply callback collected)
+        (presult-fail input))))
+
+;; Binary combinators
+
+(defun and-then (&rest parsers)
+  (apply #'seq (cons (lambda (&rest results) (reduce #'concat-presult results)) parsers)))
+
+(defp or-else (&rest parsers)
+  (loop for p in parsers
+        for result = (run-parser p input)
+        when (presult-success result)
+          do (return result)
+        finally (return (presult-fail input))))
 
 (defp and-then-ignore (p1 p2)
   (let ((result (run-parser p1 input)))
@@ -125,20 +141,6 @@
                     (presult-ok (presult-matched match-result) (presult-remaining rhs-result))
                     (presult-fail input)))
               (presult-fail input)))
-        (presult-fail input))))
-
-;; this function evaluates the parsers in the given order.
-;; it saves the results and passes them as arguments to a given function
-(defp seq (callback &rest parsers)
-  (let ((remaining input)
-        (collected nil))
-    (setq collected (loop for p in parsers
-                          for result = (run-parser p remaining)
-                          do (setq remaining (presult-remaining result))
-                          while (presult-success result)
-                          collect result))
-    (if (= (length parsers) (length collected))
-        (apply callback collected)
         (presult-fail input))))
 
 ;; Blocki-specific parsers
@@ -172,8 +174,8 @@
 ;; numbers
 ;; =======
 
-;; blocks
-;; ======
+;; atoms
+;; =====
 
 ;; patom := string | number | array
 (defun patom ()
@@ -185,6 +187,9 @@
 (defun psymbol ()
   (and-then (pone #\:)
             (pidentifier)))
+
+;; blocks
+;; ======
 
 ;; pfuncarg-pair := <symbol> <atom>
 (defun pfuncarg-pair ()
@@ -202,13 +207,18 @@
 
 ;; pfuncall := <pidentifier> <pfuncargs>
 (defun pfuncall ()
-  (and-then (pidentifier)
-            (pfuncargs)))
+  (seq (lambda (identifier spaces args)
+         (declare (ignore spaces))
+         (presult-ok (make-funcall-node :name identifier :args args) (presult-remaining args)))
+       (pidentifier)
+       (many-1 (whitespace))
+       (pfuncargs)))
 
 ;; pblock-body := <pstring>
 (defun pblock-body ()
-  (pfuncall)
-  (patom))
+  (or-else
+   (pfuncall)
+   (patom)))
 
 ;; pblock := "[" <pblock-body> "]"
 (defun pblock ()
@@ -216,7 +226,7 @@
 
 ;; program := block+
 (defun pprogram ()
-  (many-1 (pblock)))
+  (many-1 (pblock) :with #'cons))
 
 ;; Interface with the outer world
 (defun parse (input)
