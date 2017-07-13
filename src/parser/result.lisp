@@ -17,6 +17,8 @@
   (matched   nil)
   (remaining nil :type pinput))
 
+(define-condition both-parsers-must-pass (error) ())
+
 (defun presult-ok (matched rest)
   (make-presult :success t :matched matched :remaining rest))
 
@@ -27,8 +29,6 @@
   (equalp nil (presult-success result)))
 
 (defun concat-presult (a b)
-  (if (presult-success b)
-      (if (presult-success a)
-          (presult-ok (pinput-concat (presult-matched a) (presult-matched b)) (presult-remaining b))
-          b)
-      a))
+  (if (and (presult-success a) (presult-success b))
+      (presult-ok (pinput-concat (presult-matched a) (presult-matched b)) (presult-remaining b))
+      (error 'both-parsers-must-pass)))

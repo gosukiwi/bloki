@@ -10,7 +10,6 @@
    #:pinput
    #:pinput-as-string
    #:pinput-concat
-   #:pinput-emptyp
    #:pinput-grab
    #:pinput-peek))
 (in-package :bloki.parser.input.string)
@@ -19,7 +18,9 @@
   (contents nil :type string))
 
 (defun make-pinput-from-char (char)
-  (make-pinput :contents (coerce (list char) 'string)))
+  (if char
+      (make-pinput :contents (coerce (list char) 'string))
+      (make-empty-pinput)))
 
 (defun make-pinput-from-string (str)
   (make-pinput :contents str))
@@ -35,9 +36,11 @@
 
 (defun pinput-peek (input)
   "peeks some input, returns the first character and the rest"
-  (let ((head (pinput-char-at 0 input))
-        (tail (pinput-skip 1 input)))
-    (values head tail)))
+    (if (pinput-emptyp input)
+        (values nil "")
+        (let ((head (pinput-char-at 0 input))
+              (tail (pinput-skip 1 input)))
+          (values head tail))))
 
 (defun pinput-concat (a b)
   (make-pinput :contents (concatenate 'string (pinput-contents a) (pinput-contents b))))

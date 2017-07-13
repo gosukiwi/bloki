@@ -15,9 +15,7 @@
 
 (defun run-parser (parser input)
   "Run a parser on a given pinput"
-  (if (pinput-emptyp input)
-      (presult-fail input)
-      (apply parser (list input))))
+  (apply parser (list input)))
 
 (defun test-parser (parser input)
   "Helper function for playing around with the REPL"
@@ -60,11 +58,19 @@
 (defun whitespace ()
   (any-of '(#\Space #\Backspace #\Linefeed #\Tab #\Return)))
 
+(defun pdigit ()
+  (any-of "0123456789"))
+
+;; match something maybe
 (defp popt (parser)
   (let ((result (run-parser parser input)))
     (if (presult-success result)
         result
-        (presult-ok (make-empty-pinput) input))))
+        (presult-ok (make-empty-pinput) (presult-remaining result)))))
+
+;; match something optionally, and ignore it in the result
+(defp pignore (parser)
+  (presult-ok (make-empty-pinput) (presult-remaining (run-parser parser input))))
 
 ;; matches a parser exactly n times
 (defp pexactly (times parser)
@@ -79,17 +85,17 @@
           finally (return matched))))
 
 (defp many-1 (parser &key (with #'concat-presult))
-  (let ((matched (presult-fail input))
+  (let ((matched (presult-ok (make-empty-pinput) input))
         (remaining input)
-        (iterating t))
+        (matched-any nil))
     (loop for new-matched = (run-parser parser remaining)
-          while iterating
-          if (presult-success new-matched)
-            do (progn
-                 (setq matched (apply with (list matched new-matched)))
-                 (setq remaining (presult-remaining new-matched)))
-          else do (setq iterating nil)
-          finally (return matched))))
+          while (presult-success new-matched)
+          do (setq matched-any t)
+          do (setq matched (apply with (list matched new-matched)))
+          do (setq remaining (presult-remaining new-matched))
+          finally (if matched-any
+                      (return matched)
+                      (return (presult-fail input))))))
 
 (defun many-0 (parser)
   "matches a parser 0 or more times"
@@ -102,13 +108,15 @@
 ;; it saves the results and passes them as arguments to a given function
 (defp seq (callback &rest parsers)
   (let ((remaining input)
-        (collected nil))
+        (collected nil)
+        (matched-amount 0))
     (setq collected (loop for p in parsers
                           for result = (run-parser p remaining)
-                          do (setq remaining (presult-remaining result))
                           while (presult-success result)
+                          do (setq remaining (presult-remaining result))
+                          do (incf matched-amount)
                           collect result))
-    (if (= (length parsers) (length collected))
+    (if (= (length parsers) matched-amount)
         (apply callback collected)
         (presult-fail input))))
 
@@ -123,13 +131,6 @@
         when (presult-success result)
           do (return result)
         finally (return (presult-fail input))))
-
-(defp and-then-ignore (p1 p2)
-  (let ((result (run-parser p1 input)))
-    (if (presult-success result)
-        (let ((result2 (run-parser p2 (presult-remaining result))))
-          (presult-ok (presult-matched result) (presult-remaining result2)))
-        result)))
 
 (defp between (&key match lhs rhs)
   (let ((lhs-result (run-parser lhs input)))
@@ -174,6 +175,29 @@
 ;; numbers
 ;; =======
 
+(defun pscientific ()
+  (and-then (any-of "eE")
+            (any-of "+-")
+            (many-1 (pdigit))))
+
+(defun pdecimal ()
+  (and-then (pone #\.)
+            (many-1 (pdigit))))
+
+(defun pdecimal-or-scientific ()
+  (and-then (pdecimal)
+            (popt (pscientific))))
+
+(defun ppositive-number ()
+  (and-then (many-1 (pdigit))
+            (popt (pdecimal-or-scientific))))
+
+(defun pnumber ()
+  (or-else
+   (and-then (pone #\-)
+             (ppositive-number))
+   (ppositive-number)))
+
 ;; atoms
 ;; =====
 
@@ -203,7 +227,7 @@
 ;; pfuncargs := <patom> | <pfuncarg-pair>+
 (defun pfuncargs ()
   (or-else (patom)
-           (many-1 (pfuncarg-pair))))
+           (many-1 (pfuncarg-pair) :with #'cons)))
 
 ;; pfuncall := <pidentifier> <pfuncargs>
 (defun pfuncall ()
@@ -216,9 +240,8 @@
 
 ;; pblock-body := <pstring>
 (defun pblock-body ()
-  (or-else
-   (pfuncall)
-   (patom)))
+  (or-else (pfuncall)
+           (patom)))
 
 ;; pblock := "[" <pblock-body> "]"
 (defun pblock ()
