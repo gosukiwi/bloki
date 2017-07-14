@@ -90,7 +90,7 @@
 ;; funcarg-list := <funcarg-pair>+
 (defun pfuncarg-list ()
   (many-1 (pfuncarg-pair) :initial (make-argument-list-node)
-                          :with #'concat-argument
+                          :with #'add-argument
                           :wrap t))
 
 (defun pfuncarg-single ()

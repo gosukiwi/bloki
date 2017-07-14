@@ -4,7 +4,7 @@
         :bloki.parser.input.string)
   (:export
    #:argument-list-node-arguments
-   #:concat-argument
+   #:add-argument
    #:make-argument-list-node
    #:make-argument-node
    #:make-funcall-node))
@@ -25,5 +25,5 @@
 
 ;; a is an arg list
 ;; b is an arg
-(defun concat-argument (a b)
+(defun add-argument (a b)
   (make-argument-list-node :arguments (cons b (argument-list-node-arguments a))))
