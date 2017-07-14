@@ -81,9 +81,6 @@
 
 ;; Combinators
 
-(defp papply (callback &key to)
-  (apply callback (list (run-parser to input) input)))
-
 ;; match something maybe
 (defp popt (parser)
   (let ((result (run-parser parser input)))

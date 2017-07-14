@@ -91,12 +91,8 @@
 ;; TODO implement argument-list-node-last-argument
 ;; funcarg-list := <funcarg-pair>+
 (defun pfuncarg-list ()
-  (papply (lambda (match input)
-            (if (presult-success match)
-                (presult-ok match (presult-remaining (car (argument-list-node-arguments match))))
-                (presult-fail input)))
-          :to (many-1 (pfuncarg-pair) :initial (make-argument-list-node)
-                                      :with #'concat-argument)))
+  (many-1 (pfuncarg-pair) :initial (make-argument-list-node)
+                          :with #'concat-argument))
 
 ;; pfuncarg := <patom>
 ;;           | <pfuncarg-list>
