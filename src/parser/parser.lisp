@@ -78,7 +78,7 @@
 ;; blocks
 ;; ======
 
-;; pfuncarg-pair := <symbol> <atom>
+;; pfuncarg-pair := <symbol> <many-1-whitespace> <atom>
 (defun pfuncarg-pair ()
   (seq (lambda (symbol spaces atom)
          (declare (ignore spaces))
@@ -89,18 +89,22 @@
 
 ;; NOTE it uses `car' because the arguments are added to the head of the list
 ;; TODO implement argument-list-node-last-argument
+;; funcarg-list := <funcarg-pair>+
 (defun pfuncarg-list ()
-  (papply (lambda (match)
-            (presult-ok match (presult-remaining (car (argument-list-node-arguments match)))))
+  (papply (lambda (match input)
+            (if (presult-success match)
+                (presult-ok match (presult-remaining (car (argument-list-node-arguments match))))
+                (presult-fail input)))
           :to (many-1 (pfuncarg-pair) :initial (make-argument-list-node)
                                       :with #'concat-argument)))
 
-;; pfuncarg := <patom> | <pfuncarg-pair>+
+;; pfuncarg := <patom>
+;;           | <pfuncarg-list>
 (defun pfuncarg ()
-  (or-else (patom)
-           (pfuncarg-list)))
+  (or-else (pfuncarg-list)
+           (patom)))
 
-;; pfuncall := <pidentifier> <pfuncarg>
+;; pfuncall := <identifier> <many-1-whitespace> <funcarg>
 (defun pfuncall ()
   (seq (lambda (identifier spaces args)
          (declare (ignore spaces))
@@ -111,7 +115,8 @@
        (many-1 (whitespace))
        (pfuncarg)))
 
-;; pblock-body := <pstring>
+;; pblock-body := <funcall>
+;;              | <atom>
 (defun pblock-body ()
   (or-else (pfuncall)
            (patom)))

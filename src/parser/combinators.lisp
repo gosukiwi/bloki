@@ -82,7 +82,7 @@
 ;; Combinators
 
 (defp papply (callback &key to)
-  (apply callback (list (run-parser to input))))
+  (apply callback (list (run-parser to input) input)))
 
 ;; match something maybe
 (defp popt (parser)
