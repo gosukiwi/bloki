@@ -104,8 +104,18 @@
           do (setq matched (concat-presult matched new-matched))
           finally (return matched))))
 
-;; many-1 matches something 1 or more times
-;; use :with :initial and :wrap to return custom values
+;; Matches something 1 or more times.
+;; You can use `many-1' to return a custom value, like an AST node.
+;; To do that, you can use the full form:
+;;
+;;   (many-1 (some-parser) :initial (my-initial-value)
+;;                         :with #'my-concat-function
+;;                         :wrap t)
+;;
+;; `my-concat-value' takes two values, `a' and `b'.
+;; The first time it matches something, `a' is `initial-value'.
+;; `my-concat-value' must return something of the same type as `initial-value'.
+;;
 (defp many-1 (parser &key (with #'concat-presult) initial wrap)
   (let ((matched (or initial (presult-ok (make-empty-pinput) input)))
         (remaining input)
