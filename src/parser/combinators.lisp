@@ -112,9 +112,9 @@
 ;;                         :with #'my-concat-function
 ;;                         :wrap t)
 ;;
-;; `my-concat-value' takes two values, `a' and `b'.
-;; The first time it matches something, `a' is `initial-value'.
-;; `my-concat-value' must return something of the same type as `initial-value'.
+;; `my-concat-function' takes two values, `a' and `b'.
+;; The first time it matches something, `a' is `(my-initial-value)'.
+;; `my-concat-function' must return something of the same type as `initial-value'.
 ;;
 (defp many-1 (parser &key (with #'concat-presult) initial wrap)
   (let ((matched (or initial (presult-ok (make-empty-pinput) input)))
