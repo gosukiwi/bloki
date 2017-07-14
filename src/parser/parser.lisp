@@ -84,8 +84,9 @@
           do (setq matched (concat-presult matched new-matched))
           finally (return matched))))
 
-(defp many-1 (parser &key (with #'concat-presult))
-  (let ((matched (presult-ok (make-empty-pinput) input))
+;; many-1 can take :with and :initial in order to build custom return values
+(defp many-1 (parser &key (with #'concat-presult) initial)
+  (let ((matched (or initial (presult-ok (make-empty-pinput) input)))
         (remaining input)
         (matched-any nil))
     (loop for new-matched = (run-parser parser remaining)
@@ -203,7 +204,9 @@
 
 ;; patom := string | number | array
 (defun patom ()
-  (pstring))
+  (or-else
+   (pnumber)
+   (pstring)))
 
 (defun pidentifier ()
   (many-1 (any-of "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_1234567890")))
@@ -219,24 +222,35 @@
 (defun pfuncarg-pair ()
   (seq (lambda (symbol spaces atom)
          (declare (ignore spaces))
-         (presult-ok (make-node-from-funcpair symbol atom) (presult-remaining atom)))
+         (presult-ok (make-argument-node :name symbol :value atom) (presult-remaining atom)))
        (psymbol)
        (many-1 (whitespace))
        (patom)))
 
-;; pfuncargs := <patom> | <pfuncarg-pair>+
-(defun pfuncargs ()
-  (or-else (patom)
-           (many-1 (pfuncarg-pair) :with #'cons)))
+(defp papply (callback &key to)
+  (apply callback (list (run-parser to input))))
 
-;; pfuncall := <pidentifier> <pfuncargs>
+;; NOTE it uses `car' because the arguments are added to the head of the list
+;; TODO implement argument-list-node-last-argument
+(defun pfuncarg-list ()
+  (papply (lambda (match)
+            (presult-ok match (presult-remaining (car (argument-list-node-arguments match)))))
+          :to (many-1 (pfuncarg-pair) :initial (make-argument-list-node)
+                                      :with #'concat-argument)))
+
+;; pfuncarg := <patom> | <pfuncarg-pair>+
+(defun pfuncarg ()
+  (or-else (patom)
+           (pfuncarg-list)))
+
+;; pfuncall := <pidentifier> <pfuncarg>
 (defun pfuncall ()
   (seq (lambda (identifier spaces args)
          (declare (ignore spaces))
          (presult-ok (make-funcall-node :name identifier :args args) (presult-remaining args)))
        (pidentifier)
        (many-1 (whitespace))
-       (pfuncargs)))
+       (pfuncarg)))
 
 ;; pblock-body := <pstring>
 (defun pblock-body ()

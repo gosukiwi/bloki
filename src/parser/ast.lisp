@@ -3,25 +3,22 @@
         :bloki.parser.result
         :bloki.parser.input.string)
   (:export
-   #:make-node-from-funcpair
-   #:make-funcall-node))
+   #:argument-list-node-arguments
+   #:concat-argument
+   #:make-argument-list-node
+   #:make-argument-node))
 (in-package :bloki.parser.ast)
 
 ;; abstract syntax tree stuff
 
-(defstruct named-argument-node
-  (name nil :type string)
-  (value nil))
+(defstruct argument-node
+  name
+  value)
 
-(defstruct funcall-node
-  (name nil)
-  (args nil))
+(defstruct argument-list-node
+  (arguments nil :type list))
 
-;; these are utility functions so the parser can easily make nodes
-
-(defun presult-as-string (result)
-  (pinput-as-string (presult-matched result)))
-
-(defun make-node-from-funcpair (name value)
-  (let ((pretty-name (presult-as-string name)))
-    (make-named-argument-node :name pretty-name :value value)))
+;; a is an arg list
+;; b is an arg
+(defun concat-argument (a b)
+  (make-argument-list-node :arguments (cons b (argument-list-node-arguments a))))
