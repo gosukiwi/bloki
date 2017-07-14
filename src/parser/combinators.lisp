@@ -104,8 +104,9 @@
           do (setq matched (concat-presult matched new-matched))
           finally (return matched))))
 
-;; many-1 can take :with and :initial in order to build custom return values
-(defp many-1 (parser &key (with #'concat-presult) initial)
+;; many-1 matches something 1 or more times
+;; use :with :initial and :wrap to return custom values
+(defp many-1 (parser &key (with #'concat-presult) initial wrap)
   (let ((matched (or initial (presult-ok (make-empty-pinput) input)))
         (remaining input)
         (matched-any nil))
@@ -115,7 +116,9 @@
           do (setq matched (apply with (list matched new-matched)))
           do (setq remaining (presult-remaining new-matched))
           finally (if matched-any
-                      (return matched)
+                      (return (if wrap
+                                  (presult-ok matched remaining)
+                                  matched))
                       (return (presult-fail input))))))
 
 (defun many-0 (parser)

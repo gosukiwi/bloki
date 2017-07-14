@@ -87,18 +87,23 @@
        (many-1 (whitespace))
        (patom)))
 
-;; NOTE it uses `car' because the arguments are added to the head of the list
-;; TODO implement argument-list-node-last-argument
 ;; funcarg-list := <funcarg-pair>+
 (defun pfuncarg-list ()
   (many-1 (pfuncarg-pair) :initial (make-argument-list-node)
-                          :with #'concat-argument))
+                          :with #'concat-argument
+                          :wrap t))
+
+(defun pfuncarg-single ()
+  (seq (lambda (atom)
+         (let ((argument-node (make-argument-node :value atom)))
+           (presult-ok (make-argument-list-node :arguments (list argument-node)) (presult-remaining atom))))
+       (patom)))
 
 ;; pfuncarg := <patom>
 ;;           | <pfuncarg-list>
 (defun pfuncarg ()
   (or-else (pfuncarg-list)
-           (patom)))
+           (pfuncarg-single)))
 
 ;; pfuncall := <identifier> <many-1-whitespace> <funcarg>
 (defun pfuncall ()
