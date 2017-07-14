@@ -61,6 +61,11 @@
 (defun pdigit ()
   (any-of "0123456789"))
 
+;; Combinators
+
+(defp papply (callback &key to)
+  (apply callback (list (run-parser to input))))
+
 ;; match something maybe
 (defp popt (parser)
   (let ((result (run-parser parser input)))
@@ -102,9 +107,6 @@
   "matches a parser 0 or more times"
   (popt (many-1 parser)))
 
-
-;; Combinators
-
 ;; this function evaluates the parsers in the given order.
 ;; it saves the results and passes them as arguments to a given function
 (defp seq (callback &rest parsers)
@@ -120,8 +122,6 @@
     (if (= (length parsers) matched-amount)
         (apply callback collected)
         (presult-fail input))))
-
-;; Binary combinators
 
 (defun and-then (&rest parsers)
   (apply #'seq (cons (lambda (&rest results) (reduce #'concat-presult results)) parsers)))
@@ -227,9 +227,6 @@
        (many-1 (whitespace))
        (patom)))
 
-(defp papply (callback &key to)
-  (apply callback (list (run-parser to input))))
-
 ;; NOTE it uses `car' because the arguments are added to the head of the list
 ;; TODO implement argument-list-node-last-argument
 (defun pfuncarg-list ()
@@ -247,7 +244,9 @@
 (defun pfuncall ()
   (seq (lambda (identifier spaces args)
          (declare (ignore spaces))
-         (presult-ok (make-funcall-node :name identifier :args args) (presult-remaining args)))
+         (presult-ok (make-funcall-node :name identifier
+                                        :argument-list (presult-matched args))
+                     (presult-remaining args)))
        (pidentifier)
        (many-1 (whitespace))
        (pfuncarg)))

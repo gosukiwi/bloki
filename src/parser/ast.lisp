@@ -6,7 +6,8 @@
    #:argument-list-node-arguments
    #:concat-argument
    #:make-argument-list-node
-   #:make-argument-node))
+   #:make-argument-node
+   #:make-funcall-node))
 (in-package :bloki.parser.ast)
 
 ;; abstract syntax tree stuff
@@ -17,6 +18,10 @@
 
 (defstruct argument-list-node
   (arguments nil :type list))
+
+(defstruct funcall-node
+  name
+  (argument-list nil :type argument-list-node))
 
 ;; a is an arg list
 ;; b is an arg
