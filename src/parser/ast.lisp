@@ -21,7 +21,8 @@
 
 (defstruct funcall-node
   name
-  (argument-list nil :type argument-list-node))
+  (argument-list nil :type argument-list-node)
+  (binary nil :type boolean))
 
 ;; a is an arg list
 ;; b is an arg

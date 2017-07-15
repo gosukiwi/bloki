@@ -167,6 +167,9 @@ The syntax is very simple, and extensible via simple macros. It doesn't get in t
 
 It has functional goodies like functions as first class citizens, variables default to immutable, immutable data structures, and built-in currying. It also has
 an script feel so it's easy to think out algorithms any way you like.
+
+## Good Practices
+Bloki enforces some good practices, like named parameters and complete functions.
     
 # Developers
 Bloki is implemented using Common Lisp. It compiles bloki code down to Lisp, it can then eval it or emit machine code.

@@ -71,10 +71,11 @@
 (defun patom ()
   (or-else (pnumber)
            (pstring)
+           (pidentifier)
            (pnil)))
 
 (defun pidentifier ()
-  (many-1 (any-of "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_1234567890")))
+  (many-1 (any-of "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-_/?+-*/<>|")))
 
 (defun psymbol ()
   (and-then (pone #\:)
@@ -121,10 +122,28 @@
        (many-1 (whitespace))
        (pfuncarg)))
 
+(defun pbinary-funcall ()
+  (seq (lambda (lhs w1 func w2 rhs)
+         (declare (ignore w1))
+         (declare (ignore w2))
+         (let* ((arg1 (make-argument-node :value lhs))
+                (arg2 (make-argument-node :value rhs))
+                (arglist (make-argument-list-node :arguments (list arg1 arg2))))
+           (presult-ok (make-funcall-node :name func
+                                          :argument-list arglist
+                                          :binary t)
+                       (presult-remaining rhs))))
+       (patom)
+       (many-1 (whitespace))
+       (pidentifier)
+       (many-1 (whitespace))
+       (patom)))
+
 ;; pblock-body := <funcall>
 ;;              | <atom>
 (defun pblock-body ()
   (or-else (pfuncall)
+           (pbinary-funcall)
            (patom)))
 
 ;; pblock := "[" <pblock-body> "]"
