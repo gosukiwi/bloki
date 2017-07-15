@@ -142,8 +142,8 @@
 ;; pblock-body := <funcall>
 ;;              | <atom>
 (defun pblock-body ()
-  (or-else (pfuncall)
-           (pbinary-funcall)
+  (or-else (pbinary-funcall)
+           (pfuncall)
            (patom)))
 
 ;; pblock := "[" <pblock-body> "]"
