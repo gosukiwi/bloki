@@ -54,19 +54,24 @@
             (popt (pdecimal-or-scientific))))
 
 (defun pnumber ()
-  (or-else
-   (and-then (pone #\-)
-             (ppositive-number))
-   (ppositive-number)))
+  (or-else (and-then (pone #\-)
+                     (ppositive-number))
+           (ppositive-number)))
 
 ;; atoms
 ;; =====
 
+(defun pnil ()
+  (or-else (and-then (pone #\[)
+                     (many-0 (whitespace))
+                     (pone #\]))
+           (pstr "nil")))
+
 ;; patom := string | number | array
 (defun patom ()
-  (or-else
-   (pnumber)
-   (pstring)))
+  (or-else (pnumber)
+           (pstring)
+           (pnil)))
 
 (defun pidentifier ()
   (many-1 (any-of "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_1234567890")))
@@ -124,7 +129,8 @@
 
 ;; pblock := "[" <pblock-body> "]"
 (defun pblock ()
-  (between :lhs (pone #\[) :rhs (pone #\]) :match (pblock-body)))
+  (or-else (between :lhs (pone #\[) :rhs (pone #\]) :match (pblock-body))
+           (patom)))
 
 ;; program := block+
 (defun pprogram ()

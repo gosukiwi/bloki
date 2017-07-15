@@ -1,9 +1,5 @@
-Bloki lang
-============================================
-
-Bloki is a functional static programming language which feels dynamic and looks blocky. 
-
-It looks like this:
+# Bloki
+Bloki is a functional static programming language which feels dynamic and looks blocky:
 
     // custom types are basically dicts
     [type person :name :age] // { name: nil, age: nil }
@@ -141,7 +137,7 @@ It looks like this:
     [each #[it| [print it]] a]
 
     // an even shorter way
-    [each #[print it] ]
+    [each #[print it]]
     
     // chaining
     a >> [each #[print it]]
@@ -155,7 +151,22 @@ It looks like this:
     [while t
       [print "hello!"]
       [break]]
-    
+
+    [macro defp [name body]
+      [fn ,name [] [
+        #[input| ,body]
+      ]]
+    [defp fooparser "Input is: #{input}"]
+    // will be compiled to
+    // [fn fooparser [] [
+    //   #[input| "Input is #{input}"]
+    // ]
+
+The core concept of Bloki are blocks of code. A program is just a bunch of blocks executed in order. Bloki aims to be a minimal, expressive and powerful language.
+The syntax is very simple, and extensible via simple macros. It doesn't get in the way, it doesn't need to be used in a functional pure way.
+
+It has functional goodies like functions as first class citizens, variables default to immutable, immutable data structures, and built-in currying. It also has
+an script feel so it's easy to think out algorithms any way you like.
     
 # Developers
 Bloki is implemented using Common Lisp. It compiles bloki code down to Lisp, it can then eval it or emit machine code.

@@ -46,7 +46,8 @@
   (make-pinput :contents (concatenate 'string (pinput-contents a) (pinput-contents b))))
 
 (defun pinput-first (input amount)
-  (subseq (pinput-contents input) 0 amount))
+  (let ((str (pinput-contents input)))
+    (subseq str 0 (min amount (length str)))))
 
 (defun pinput-starts-with (str input)
   (equalp str (pinput-first input (length str))))
