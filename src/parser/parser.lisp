@@ -146,8 +146,10 @@
 ;; block-body := <binary-funcall>
 ;;             | <funcall>
 (defun pblock-body ()
-  (or-else (pbinary-funcall)
-           (pfuncall)))
+  (between :lhs   (whitespace*)
+           :match (or-else (pbinary-funcall)
+                           (pfuncall))
+           :rhs   (whitespace*)))
 
 ;; block := "[" <block-body> "]"
 ;;        | <atom>
