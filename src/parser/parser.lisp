@@ -84,7 +84,7 @@
 ;; blocks
 ;; ======
 
-;; pfuncarg-pair := <symbol> <many-1-whitespace> <atom>
+;; pfuncarg-pair := <symbol> <many-1-whitespace> <block>
 (defun pfuncarg-pair ()
   (seq (lambda (s1 symbol s2 atom s3)
          (declare (ignore s1))
@@ -94,7 +94,7 @@
        (whitespace*)
        (psymbol)
        (whitespace+)
-       (patom)
+       (pblock)
        (whitespace*)))
 
 ;; funcarg-list := <funcarg-pair>+
@@ -104,10 +104,11 @@
                           :wrap t))
 
 (defun pfuncarg-single ()
-  (seq (lambda (atom)
-         (let ((argument-node (make-argument-node :value atom)))
-           (presult-ok (make-argument-list-node :arguments (list argument-node)) (presult-remaining atom))))
-       (patom)))
+  (seq (lambda (matched-block)
+         (let ((argument-node (make-argument-node :value matched-block)))
+           (presult-ok (make-argument-list-node :arguments (list argument-node))
+                       (presult-remaining matched-block))))
+       (pblock)))
 
 ;; pfuncarg := <patom>
 ;;           | <pfuncarg-list>
@@ -115,14 +116,14 @@
   (or-else (pfuncarg-list)
            (pfuncarg-single)))
 
-;; pfuncall := <identifier> <many-1-whitespace> <funcarg>
+;; pfuncall := <block> <many-1-whitespace> <funcarg>
 (defun pfuncall ()
-  (seq (lambda (identifier spaces args)
+  (seq (lambda (fn spaces args)
          (declare (ignore spaces))
-         (presult-ok (make-funcall-node :name identifier
+         (presult-ok (make-funcall-node :name fn
                                         :argument-list (presult-matched args))
                      (presult-remaining args)))
-       (pidentifier)
+       (pblock)
        (whitespace+)
        (pfuncarg)))
 

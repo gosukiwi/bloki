@@ -128,7 +128,8 @@ Bloki is a functional static programming language which feels dynamic and looks 
     // loops
     // TODO: Copy some of Lisps loops?
     
-    [times 10 [print "hi"]]
+    // maybe?
+    [[foo 1] [print "hi"]] // => [foo 1] returns a lambda
     
     [let a (1 2 3)]
     [each [lambda [it]
