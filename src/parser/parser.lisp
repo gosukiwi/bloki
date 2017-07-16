@@ -4,7 +4,9 @@
         :bloki.parser.combinators
         :bloki.parser.result)
   (:export
-   #:parse))
+   #:parse
+   #:pblock
+   #:test-parser))
 (in-package :bloki.parser.parser)
 
 ;; strings

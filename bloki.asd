@@ -15,9 +15,9 @@
                          (:file "combinators" :depends-on ("result" "input-string"))
                          (:file "ast" :depends-on ("result" "input-string"))
                          (:file "parser" :depends-on ("ast" "result" "combinators")))))
-  :in-order-to ((test-op (test-op "bloki/tests"))))
+  :in-order-to ((test-op (test-op "bloki-test"))))
 
-(defsystem "bloki.tests"
+(defsystem "bloki-test"
   :depends-on ("bloki" "prove")
   :defsystem-depends-on ("prove-asdf")
   :pathname "test/"
