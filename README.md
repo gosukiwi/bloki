@@ -82,6 +82,7 @@ Bloki is a functional static programming language which feels dynamic and looks 
     [if t
       "True"
       "False"]
+    [unless something ...]
       
     [match age with
       [[< 18] "Under 18"]

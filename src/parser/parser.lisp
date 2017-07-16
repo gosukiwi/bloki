@@ -133,22 +133,23 @@
                                           :argument-list arglist
                                           :binary t)
                        (presult-remaining rhs))))
-       (patom)
+       (pblock)
        (many-1 (whitespace))
        (pidentifier)
        (many-1 (whitespace))
-       (patom)))
+       (pblock)))
 
 ;; pblock-body := <funcall>
 ;;              | <atom>
 (defun pblock-body ()
   (or-else (pbinary-funcall)
-           (pfuncall)
-           (patom)))
+           (pfuncall)))
 
 ;; pblock := "[" <pblock-body> "]"
 (defun pblock ()
-  (or-else (between :lhs (pone #\[) :rhs (pone #\]) :match (pblock-body))
+  (or-else (between :lhs   (lambda (input) (run-parser (pone #\[) input))
+                    :match (lambda (input) (run-parser (pblock-body) input))
+                    :rhs   (lambda (input) (run-parser (pone #\]) input)))
            (patom)))
 
 ;; program := block+
