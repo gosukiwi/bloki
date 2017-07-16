@@ -7,6 +7,9 @@
    :bloki.parser.result))
 (in-package :bloki-test.parser)
 
+(defun run-tests ()
+  (prove:run :bloki-test :reporter :dot))
+
 (defun it-parses (parser input)
   (ok (presult-success (test-parser parser input)) ))
 
