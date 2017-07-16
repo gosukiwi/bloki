@@ -5,7 +5,7 @@
    :prove
    :bloki.parser.parser
    :bloki.parser.result))
-(in-package :bloki.tests)
+(in-package :bloki-test.parser)
 
 (defun it-parses (parser input)
   (ok (presult-success (test-parser parser input)) ))
