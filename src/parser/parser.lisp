@@ -147,9 +147,9 @@
 
 ;; pblock := "[" <pblock-body> "]"
 (defun pblock ()
-  (or-else (between :lhs   (lambda (input) (run-parser (pone #\[) input))
+  (or-else (between :lhs   (pone #\[)
                     :match (lambda (input) (run-parser (pblock-body) input))
-                    :rhs   (lambda (input) (run-parser (pone #\]) input)))
+                    :rhs   (pone #\]))
            (patom)))
 
 ;; program := block+
