@@ -63,7 +63,7 @@
 
 (defun pnil ()
   (or-else (and-then (pone #\[)
-                     (many-0 (whitespace))
+                     (whitespace*)
                      (pone #\]))
            (pstr "nil")))
 
@@ -86,12 +86,16 @@
 
 ;; pfuncarg-pair := <symbol> <many-1-whitespace> <atom>
 (defun pfuncarg-pair ()
-  (seq (lambda (symbol spaces atom)
-         (declare (ignore spaces))
+  (seq (lambda (s1 symbol s2 atom s3)
+         (declare (ignore s1))
+         (declare (ignore s2))
+         (declare (ignore s3))
          (presult-ok (make-argument-node :name symbol :value atom) (presult-remaining atom)))
+       (whitespace*)
        (psymbol)
-       (many-1 (whitespace))
-       (patom)))
+       (whitespace+)
+       (patom)
+       (whitespace*)))
 
 ;; funcarg-list := <funcarg-pair>+
 (defun pfuncarg-list ()
@@ -119,7 +123,7 @@
                                         :argument-list (presult-matched args))
                      (presult-remaining args)))
        (pidentifier)
-       (many-1 (whitespace))
+       (whitespace+)
        (pfuncarg)))
 
 (defun pbinary-funcall ()
@@ -134,20 +138,23 @@
                                           :binary t)
                        (presult-remaining rhs))))
        (pblock)
-       (many-1 (whitespace))
+       (whitespace+)
        (pidentifier)
-       (many-1 (whitespace))
+       (whitespace+)
        (pblock)))
 
-;; pblock-body := <funcall>
-;;              | <atom>
+;; block-body := <binary-funcall>
+;;             | <funcall>
 (defun pblock-body ()
   (or-else (pbinary-funcall)
            (pfuncall)))
 
-;; pblock := "[" <pblock-body> "]"
+;; block := "[" <block-body> "]"
+;;        | <atom>
 (defun pblock ()
   (or-else (between :lhs   (pone #\[)
+                    ;; we don't want to execute `pblock-body' as it makes an infinite loop
+                    ;; so we explicitly defer it wrapping it in a parser
                     :match (lambda (input) (run-parser (pblock-body) input))
                     :rhs   (pone #\]))
            (patom)))

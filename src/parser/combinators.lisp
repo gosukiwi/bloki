@@ -22,7 +22,9 @@
    #:run-parser
    #:seq
    #:test-parser
-   #:whitespace))
+   #:whitespace
+   #:whitespace*
+   #:whitespace+))
 (in-package :bloki.parser.combinators)
 
 (defmacro defp (name args body)
@@ -72,12 +74,6 @@
     (if success
         (presult-ok (make-pinput-from-string str) rest)
         (presult-fail input))))
-
-(defun whitespace ()
-  (any-of '(#\Space #\Backspace #\Linefeed #\Tab #\Return)))
-
-(defun pdigit ()
-  (any-of "0123456789"))
 
 ;; Combinators
 
@@ -172,3 +168,16 @@
                     (presult-fail input)))
               (presult-fail input)))
         (presult-fail input))))
+
+;; not-so-base but common and useful parsers anyways
+(defun whitespace ()
+  (any-of '(#\Space #\Backspace #\Linefeed #\Tab #\Return)))
+
+(defun whitespace+ ()
+  (many-1 (whitespace)))
+
+(defun whitespace* ()
+  (many-0 (whitespace)))
+
+(defun pdigit ()
+  (any-of "0123456789"))
