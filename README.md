@@ -73,6 +73,6 @@ Then just link `lib/bloki.asd`
 ## Running tests
 
     (ql:quickload "bloki-test")
-    (run-tests)
+    (prove:run :bloki-test :reporter :dot)
     
 You'll need to set up [prove](https://github.com/fukamachi/prove).

@@ -1,7 +1,6 @@
 (defsystem "bloki"
   :name "bloki"
   :version "0.0.0"
-  :maintainer "Federico Ramirez"
   :author "Federico Ramirez"
   :licence "MIT"
   :description "programming language"
@@ -16,11 +15,3 @@
                          (:file "ast" :depends-on ("result" "input-string"))
                          (:file "parser" :depends-on ("ast" "result" "combinators")))))
   :in-order-to ((test-op (test-op "bloki-test"))))
-
-(defsystem "bloki-test"
-  :depends-on ("bloki" "prove")
-  :defsystem-depends-on ("prove-asdf")
-  :pathname "test/"
-  :components ((:test-file "parser-tests"))
-  :perform (test-op :after (op c)
-                    (funcall (intern #.(string :run) :prove) c)))
