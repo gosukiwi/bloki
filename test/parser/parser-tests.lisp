@@ -13,6 +13,8 @@
 (defun it-parses (parser input)
   (ok (presult-success (test-parser parser input)) ))
 
+(plan nil)
+
 ;; try simple blocks
 (it-parses (pblock) "1")
 (it-parses (pblock) "\"hi\"")
