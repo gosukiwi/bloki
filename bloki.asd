@@ -10,9 +10,9 @@
   :components ((:module "parser"
                 :pathname "parser"
                 :components
-                        ((:file "input-string")
-                         (:file "result")
-                         (:file "combinators")
-                         (:file "ast")
-                         (:file "parser"))))
+                ((:file "input-string")
+                 (:file "result")
+                 (:file "combinators")
+                 (:file "ast")
+                 (:file "parser"))))
   :in-order-to ((test-op (test-op "bloki-test"))))
