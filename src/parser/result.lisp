@@ -1,3 +1,4 @@
+(in-package :cl-user)
 (defpackage :bloki.parser.result
   (:use :cl
         :bloki.parser.input.string)

@@ -1,3 +1,4 @@
+(in-package :cl-user)
 (defpackage :bloki.parser.parser
   (:use :cl
         :bloki.parser.ast

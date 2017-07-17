@@ -1,3 +1,4 @@
+(in-package :cl-user)
 (defpackage :bloki.parser.combinators
   (:use :cl
         :bloki.parser.result

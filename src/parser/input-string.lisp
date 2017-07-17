@@ -1,6 +1,7 @@
 ;; All parsers must take input somehow. All parser input interfaces live in `src/parser/input'.
 ;; This is a simple interface around strings. It's used for easy development.
 ;; TODO Implement an interface around file reading? Wait until it's needed though.
+(in-package :cl-user)
 (defpackage bloki.parser.input.string
   (:use :common-lisp)
   (:export
