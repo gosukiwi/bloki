@@ -1,6 +1,5 @@
 # Bloki
-
-Bloki is a functional tiny programming language with safe defaults and blocky look:
+Bloki is a tiny functional programming language with safe defaults and blocky look:
 
     [fn sum [x y]
       [x + y]]
@@ -28,20 +27,28 @@ When a function takes a single parameter, there's no need for naming it: `[print
 In Bloki, functions must be total, that means, they must always return the same value:
 
     [fn foo [name]
-      [if name
+      [if [[str/length name] > 3]
         "Name is #{name}"
-        nil]] // ERROR, must return string or nil, but not both
+        18]] // ERROR, must return string or number, but not both
 
 The fix is easy
 
     [fn foo [name]
-      [if name
+      [if [[str/length name] > 3]
         "Name is #{name}"
-        "Anonymous"]]
+        "Your name is too short... I'll call you Mike."]]
         
-In Bloki, `nil` is an empty block of code, so it's the same as writing `[]`, nevertheless it's
-reccommended to just use the `nil` keyword.
+If you really don't want another string, you can use `maybe`:
 
+    [fn foo [name]
+      [if [[str/length name] > 3]
+        [maybe "Name is {name}"]
+        [maybe-not]]]
+
+    [resolve [foo "Mike"]
+      [print name]         // when it has a value
+      [do-something-else]] // when it doesn't
+        
 A Bloki program is just a bunch of blocks executed in order. The syntax is very simple, and extensible via 
 simple macros. It doesn't get in the way.
 
@@ -49,6 +56,25 @@ Bloki doesn't get in the way, it's a functional language with goodies like
 functions as first class citizens, immutable "variables" by default, immutable
 data structures, and built-in currying. But it also has an script feel so it's easy
 to think algorithms any way you like.
+
+# Goals
+Bloki aims to provide:
+
+* Garbage collection
+* An interactive development cycle though a decent REPL - Like Lisp
+* Dynamic feel, try to be as safe as possible with little info (eg, functions return always the same type, useless variables, etc) - Like F#
+* Provide and force built-in syntactical analysis (don't allow messy code) - Like Rubocop
+* There is no nil, only a `maybe` construct: `[maybe "I'm a string"]` - Like OCaml
+* Be great for web development - Like Ruby
+* Have a great ecosystem (this is the hardest, needs lots of stuff) - Like Ruby
+* Exceptions only make things worse, allow functions to return multiple values. Together with `maybe` it's enough - Like Go
+* There are ways to throw errors though, but they are terminal errors and very rare - Like Go
+
+Bloki does not yet aim to:
+
+* be fast
+* run everywhere
+* be stable
 
 # Developers
 Bloki is implemented using Common Lisp. It compiles bloki code down to Lisp, it can then eval it or emit machine code.
@@ -76,3 +102,8 @@ Then just link `lib/bloki.asd`
     (prove:run :bloki-test :reporter :dot)
     
 You'll need to set up [prove](https://github.com/fukamachi/prove).
+
+## TODO
+It's still not sure whether how Bloki code should run. It could run in a Lisp-powered VM, and be compiled as bytecode. Lisp can generate cross-platform self-contained executables.
+That might take too much effort though, it could be compiled down to Lisp code and then use Lisp to compile that code, generating and executable and thus compiling to native code though Lisp.
+The downside is that debugging would be harder, as there would be no way to easily make a stepping debugger. Bloki would be much faster though.
