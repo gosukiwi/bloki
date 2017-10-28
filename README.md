@@ -104,6 +104,13 @@ Then just link `lib/bloki.asd`
 You'll need to set up [prove](https://github.com/fukamachi/prove).
 
 ## TODO
-It's still not sure whether how Bloki code should run. It could run in a Lisp-powered VM, and be compiled as bytecode. Lisp can generate cross-platform self-contained executables.
-That might take too much effort though, it could be compiled down to Lisp code and then use Lisp to compile that code, generating and executable and thus compiling to native code though Lisp.
-The downside is that debugging would be harder, as there would be no way to easily make a stepping debugger. Bloki would be much faster though.
+It's still not sure whether how Bloki code should run. It could run in a
+Lisp-powered VM, and be compiled as bytecode. Lisp can generate cross-platform
+self-contained executables.
+
+That might take too much effort though, it could be compiled down to Lisp code
+and then use Lisp to compile that code, generating and executable and thus
+compiling to native code though Lisp.
+
+The downside is that debugging would be harder, as there would be no way to
+easily make a stepping debugger. Bloki would be much faster though.
