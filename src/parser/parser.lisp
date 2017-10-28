@@ -3,6 +3,7 @@
   (:use :cl
         :bloki.parser.ast
         :bloki.parser.combinators
+        :bloki.parser.input.string
         :bloki.parser.result)
   (:export
    #:parse
@@ -78,7 +79,10 @@
            (pnil)))
 
 (defun pidentifier ()
-  (many-1 (any-of "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-_/?+-*/<>|")))
+  (seq (lambda (identifier)
+         (presult-ok (make-identifier-node :value (pinput-contents (presult-matched identifier)))
+                     (presult-remaining identifier)))
+       (many-1 (any-of "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-_/?+-*/<>|"))))
 
 (defun psymbol ()
   (and-then (pone #\:)
@@ -147,15 +151,25 @@
        (whitespace+)
        (pblock)))
 
-;; special forms
-(defun pparams ()
-  ;; TODO: pidentifier should return an AST node, so here we can concatenate the nodes
-  (between :lhs (pone #\[)
-           :match (many-1 (and-then (pidentifier)
-                                    (whitespace*)))
-           :rhs (pone #\])))
+(defun pparam-list ()
+  (many-1 (seq (lambda (identifier optspace)
+                 (presult-ok (presult-matched identifier) (presult-remaining optspace)))
+               (pidentifier)
+               (whitespace*))
+          :with #'build-parameter-list-node
+          :initial (make-parameter-list-node)
+          :wrap t))
 
-(defun pfn ()
+;; special forms
+;; =============
+
+(defun pparams ()
+  (between :lhs   (pone #\[)
+           :match (pparam-list)
+           :rhs   (pone #\])))
+
+;; pfunc := fn <identifier> <params> <blocks>+
+(defun pfunc ()
   (seq ()
        (pstring "fn")
        (whitespace+)
@@ -170,7 +184,7 @@
 ;;             | <funcall>
 (defun pblock-body ()
   (between :lhs   (whitespace*)
-           :match (or-else (pfn)
+           :match (or-else (pfunc)
                            ; end of special forms
                            (pbinary-funcall)
                            (pfuncall))
