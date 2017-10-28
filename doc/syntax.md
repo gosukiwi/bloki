@@ -164,3 +164,9 @@ Syntax at a glance:
     // [fn fooparser [] [
     //   #[input| "Input is #{input}"]
     // ]
+
+    // use currying to define default parameters
+    [fn foo [x y]
+      [x + y]]
+    [let foo-with-1 [foo x: 1]]
+    [foo-with-1 2] # => 3

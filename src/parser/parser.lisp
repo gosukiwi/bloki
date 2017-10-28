@@ -147,11 +147,32 @@
        (whitespace+)
        (pblock)))
 
+;; special forms
+(defun pparams ()
+  ;; TODO: pidentifier should return an AST node, so here we can concatenate the nodes
+  (between :lhs (pone #\[)
+           :match (many-1 (and-then (pidentifier)
+                                    (whitespace*)))
+           :rhs (pone #\])))
+
+(defun pfn ()
+  (seq ()
+       (pstring "fn")
+       (whitespace+)
+       (pidentifier)
+       (whitespace+)
+       (pparams)
+       (many-1 (pblock))))
+
+;; end of special forms
+
 ;; block-body := <binary-funcall>
 ;;             | <funcall>
 (defun pblock-body ()
   (between :lhs   (whitespace*)
-           :match (or-else (pbinary-funcall)
+           :match (or-else (pfn)
+                           ; end of special forms
+                           (pbinary-funcall)
                            (pfuncall))
            :rhs   (whitespace*)))
 
