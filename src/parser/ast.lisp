@@ -11,7 +11,8 @@
    #:make-funcall-node
    #:make-identifier-node
    #:make-parameter-list-node
-   #:build-parameter-list-node))
+   #:build-parameter-list-node
+   #:make-function-definition-node))
 (in-package :bloki.parser.ast)
 
 ;; abstract syntax tree stuff
@@ -33,6 +34,11 @@
 
 (defstruct parameter-list-node
   (parameters nil :type list))
+
+(defstruct function-definition-node
+  name
+  params
+  body)
 
 ;; a is an arg list
 ;; b is an arg

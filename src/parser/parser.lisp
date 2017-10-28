@@ -151,6 +151,9 @@
        (whitespace+)
        (pblock)))
 
+;; special forms
+;; =============
+
 (defun pparam-list ()
   (many-1 (seq (lambda (identifier optspace)
                  (presult-ok (presult-matched identifier) (presult-remaining optspace)))
@@ -160,9 +163,6 @@
           :initial (make-parameter-list-node)
           :wrap t))
 
-;; special forms
-;; =============
-
 (defun pparams ()
   (between :lhs   (pone #\[)
            :match (pparam-list)
@@ -170,13 +170,22 @@
 
 ;; pfunc := fn <identifier> <params> <blocks>+
 (defun pfunc ()
-  (seq ()
-       (pstring "fn")
+  (seq (lambda (fn s1 name s2 params s3 body)
+         (declare (ignore fn))
+         (declare (ignore s1))
+         (declare (ignore s2))
+         (declare (ignore s3))
+         (presult-ok (make-function-definition-node :name (presult-matched name)
+                                                    :params (presult-matched params)
+                                                    :body (presult-matched body))
+                     (presult-remaining body)))
+       (pstr "fn")
        (whitespace+)
        (pidentifier)
        (whitespace+)
        (pparams)
-       (many-1 (pblock))))
+       (whitespace+)
+       (many-1 (pblock) :with #'cons :wrap t)))
 
 ;; end of special forms
 
