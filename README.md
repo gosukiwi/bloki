@@ -38,7 +38,7 @@ The fix is easy
         "Name is #{name}"
         "Your name is too short... I'll call you Mike."]]
         
-If you really don't want another string, you can use `maybe`:
+If you really don't want string, you can use `maybe`:
 
     [fn foo [name]
       [if [[str/length name] > 3]
@@ -56,6 +56,25 @@ Bloki doesn't get in the way, it's a functional language with goodies like
 functions as first class citizens, immutable "variables" by default, immutable
 data structures, and built-in currying. But it also has an script feel so it's easy
 to think algorithms any way you like.
+
+## Type checking
+Note that, the compiler can't always know the types. So this is just a little help. Consider this code:
+
+    [fn foo [a b]
+      [if a a b]]
+
+That code takes `a` and `b`, and they can be of any type, let's call them `'a`
+and `'b` as in "anything a" and "anything b".
+
+In bloki, only false evaluates to false, so if a is anything but false, it will
+be returned, otherwise, it returns b. So this function returns `'a` or `'b`.
+They can be the same type, or not, Bloki can't tell just from that. That is a
+problem because in Bloki all functions must always return the same type.
+
+Nevertheless, the above code will compile. One usage information is added, it
+will fail:
+
+    [foo 1 "foo"] # invalid
 
 # Goals
 Bloki aims to provide:
@@ -77,7 +96,8 @@ Bloki does not yet aim to:
 * be stable
 
 # Developers
-Bloki is implemented using Common Lisp. It compiles bloki code down to Lisp, it can then eval it or emit machine code.
+Bloki is implemented using Common Lisp. It compiles bloki code down to Lisp, it
+can then eval it or emit machine code.
 
 In case you haven't, set up ASDF:
 

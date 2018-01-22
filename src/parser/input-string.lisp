@@ -12,7 +12,8 @@
    #:pinput-as-string
    #:pinput-concat
    #:pinput-grab
-   #:pinput-peek))
+   #:pinput-peek
+   #:pinput-contents))
 (in-package :bloki.parser.input.string)
 
 (defstruct pinput

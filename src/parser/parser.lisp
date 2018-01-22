@@ -3,6 +3,7 @@
   (:use :cl
         :bloki.parser.ast
         :bloki.parser.combinators
+        :bloki.parser.input.string
         :bloki.parser.result)
   (:export
    #:parse
@@ -78,7 +79,10 @@
            (pnil)))
 
 (defun pidentifier ()
-  (many-1 (any-of "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-_/?+-*/<>|")))
+  (seq (lambda (identifier)
+         (presult-ok (make-identifier-node :value (pinput-contents (presult-matched identifier)))
+                     (presult-remaining identifier)))
+       (many-1 (any-of "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-_/?+-*/<>|"))))
 
 (defun psymbol ()
   (and-then (pone #\:)
@@ -147,11 +151,51 @@
        (whitespace+)
        (pblock)))
 
+;; special forms
+;; =============
+
+(defun pparam-list ()
+  (many-1 (seq (lambda (identifier optspace)
+                 (presult-ok (presult-matched identifier) (presult-remaining optspace)))
+               (pidentifier)
+               (whitespace*))
+          :with #'build-parameter-list-node
+          :initial (make-parameter-list-node)
+          :wrap t))
+
+(defun pparams ()
+  (between :lhs   (pone #\[)
+           :match (pparam-list)
+           :rhs   (pone #\])))
+
+;; pfunc := fn <identifier> <params> <blocks>+
+(defun pfunc ()
+  (seq (lambda (fn s1 name s2 params s3 body)
+         (declare (ignore fn))
+         (declare (ignore s1))
+         (declare (ignore s2))
+         (declare (ignore s3))
+         (presult-ok (make-function-definition-node :name (presult-matched name)
+                                                    :params (presult-matched params)
+                                                    :body (presult-matched body))
+                     (presult-remaining body)))
+       (pstr "fn")
+       (whitespace+)
+       (pidentifier)
+       (whitespace+)
+       (pparams)
+       (whitespace+)
+       (many-1 (pblock) :with #'cons :wrap t)))
+
+;; end of special forms
+
 ;; block-body := <binary-funcall>
 ;;             | <funcall>
 (defun pblock-body ()
   (between :lhs   (whitespace*)
-           :match (or-else (pbinary-funcall)
+           :match (or-else (pfunc)
+                           ; end of special forms
+                           (pbinary-funcall)
                            (pfuncall))
            :rhs   (whitespace*)))
 

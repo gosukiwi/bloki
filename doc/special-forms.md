@@ -21,6 +21,12 @@ Atoms are: strings, numbers, symbols and identifiers.
     123
     :a-symbol
     an-identifier
+    true
+    t
+    yes
+    false
+    f
+    no
 
 ## Variables
 While they are called _variables_ just to make things easier, they do not normally
@@ -117,11 +123,79 @@ argument: `it`.
 ## Arrays
 Arrays are defined using parentheses, and can contain things from different types:
 
-    (1 2 "foo" :bar)
+    [let arr (1 2 "foo" :bar)]
+    [nth 0 arr] // => 1
 
 ## Types
+They are like little objects:
 
+    [type person 
+      [:name "Mike"]
+      [:age 18]]
+
+They can be defined without a default value too:
+
+    [type person 
+      :name
+      :age]
+
+Type checking is simple: If it quacks like a duck, it's a duck!
+
+    [type foo 
+      [:name "Anon"] 
+      [:age 18]
+    [typeof [make-person] :person] // => t
+    [typeof [make-foo] :person]    // => t
+    [typeof [make-person] :foo]    // => t
+    
+If it has name and age attributes, it's a person.
+
+### Immutable
+Types never change their value, they just return new types:
+
+    [let p1 [make-person]]
+    [let p2 [person-with p1 :name "Abe"]]
+    [person-name p1]  // => Mike
+    [person-name p2]  // => Abe
+    
 ### Inheritance
+Because types are more relaxed
+Simple inheritance is possible:
 
+    [type [adult-person mixin person]
+      [:responsibilities]]
+      
+## OOP
+Bloki aims to be multi-paradigm. You can simluate OOP:
+
+    [type person
+      :name
+      :age]
+
+    [fn p= [p1 p2]
+      [[person-name p1] =str [person-name p2]]]
+  
+TODO: I guess it has to be dynamic? Otherwise having several operators for several types sucks: =, =., =str, etc.
+      
 ## Macros
 
+## Option
+This is a concept borrowed from OCaml. There's no nil value in Bloki, instead, an option type is provided:
+
+    [type option
+      [:callback]]
+    [fn some [value]
+      #[callback| [callback :success yes :value value]]]
+    [fn none []
+      #[callback| [callback :success no :value undefined]]]
+    [some 2] // => :lambda
+    [[some 2] #[success value | [if success
+                                    [print ok]
+                                    [print "nothing"]]]]
+                                    
+Or just use the `resolve` macro/special form
+
+    [let num [some 2]]
+    [resolve num
+      [print it]
+      [print "nothing"]]
